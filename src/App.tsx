@@ -1,24 +1,39 @@
-import React from "react";
-import logo from "./logo.svg";
+import { Html5QrcodeScanner } from "html5-qrcode";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
+  const [receipts, setReceipts] = useState<string[]>([]);
+  useEffect(() => {
+    function onScanSuccess(decodedText: string) {
+      setReceipts((receipts) => {
+        const receiptSet = new Set(receipts);
+        receiptSet.add(decodedText);
+        return Array.from(receiptSet);
+      });
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader",
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      /* verbose= */ false
+    );
+    html5QrcodeScanner.render(onScanSuccess, undefined);
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div id="reader"></div>
+      <div>
+        {receipts.map((link) => (
+          <>
+            <a href={link} rel="noreferrer" target="_blank">
+              {link}
+            </a>
+            <br />
+          </>
+        ))}
+      </div>
     </div>
   );
 }
